@@ -1,14 +1,11 @@
 import axios from 'axios';
 
 export default async body => {
+  console.log(body);
   try {
-    const response = await axios.get('/api/national-parks', {
+    const response = await axios.post('/api/national-parks', {
       headers: { 'content-type': 'application/json' },
-      data: {
-        query: {
-          match_all: {},
-        },
-      },
+      data: JSON.stringify(body),
     });
 
     return response.data;

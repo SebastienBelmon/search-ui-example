@@ -1,52 +1,23 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 
-import { SearchProvider, Results, SearchBox } from '@elastic/react-search-ui';
-import { Layout } from '@elastic/react-search-ui-views';
-
+import {
+  ErrorBoundary,
+  Facet,
+  SearchProvider,
+  WithSearch,
+  SearchBox,
+  Results,
+  PagingInfo,
+  ResultsPerPage,
+  Paging,
+  Sorting,
+} from '@elastic/react-search-ui';
+import { Layout, SingleSelectFacet } from '@elastic/react-search-ui-views';
 import '@elastic/react-search-ui-views/lib/styles/styles.css';
 
-import runRequest from './elasticsearch-connector/runRequest';
-
-//TODO
-const connector = {
-  onResultClick: () => {
-    /* Not implemented */
-  },
-  onAutocompleteResultClick: () => {
-    /* Not implemented */
-  },
-  onAutocomplete: async ({ searchTerm }) => {
-    // const requestBody = buildRequest({ searchTerm });
-    // const json = await runRequest(requestBody);
-    // const state = buildState(json);
-    // return {
-    //   autocompletedResults: state.results
-    // };
-  },
-  onSearch: async state => {
-    // const { resultsPerPage } = state;
-    // const requestBody = buildRequest(state);
-    // // Note that this could be optimized by running all of these requests
-    // // at the same time. Kept simple here for clarity.
-    // const responseJson = await runRequest(requestBody);
-    // const responseJsonWithDisjunctiveFacetCounts = await applyDisjunctiveFaceting(
-    //   responseJson,
-    //   state,
-    //   ["visitors", "states"]
-    // );
-    // return buildState(responseJsonWithDisjunctiveFacetCounts, resultsPerPage);
-  },
-};
+import connector from './elasticsearch-connector';
 
 const App = () => {
-  useEffect(() => {
-    const myAsync = async () => {
-      const res = await runRequest();
-      console.log(res);
-      return res;
-    };
-    myAsync();
-  }, []);
   return (
     <SearchProvider
       config={{
@@ -55,12 +26,85 @@ const App = () => {
         hasA11yNotifications: true,
       }}
     >
-      <div className="App">
-        <Layout
-          header={<SearchBox />}
-          bodyContent={<Results titleField="title" />}
-        />
-      </div>
+      <WithSearch mapContextToProps={({ wasSearched }) => ({ wasSearched })}>
+        {({ wasSearched }) => (
+          <div className="App">
+            <ErrorBoundary>
+              <Layout
+                header={
+                  <SearchBox
+                    autocompleteMinimumCharacters={3}
+                    autocompleteResults={{
+                      linkTarget: '_blank',
+                      sectionTitle: 'Results',
+                      titleField: 'title',
+                      urlField: 'nps_link',
+                      shouldTrackClickThrough: true,
+                      clickThroughTags: ['test'],
+                    }}
+                    autocompleteSuggestions={true}
+                  />
+                }
+                sideContent={
+                  <div>
+                    {wasSearched && (
+                      <Sorting
+                        label={'Trier par'}
+                        sortOptions={[
+                          {
+                            name: 'Pertinence',
+                            value: '',
+                            direction: '',
+                          },
+                          {
+                            name: 'Titre',
+                            value: 'title',
+                            direction: 'asc',
+                          },
+                        ]}
+                      />
+                    )}
+                    <Facet
+                      field="states"
+                      label="Etat"
+                      filterType="any"
+                      isFilterable={true}
+                    />
+                    <Facet
+                      field="world_heritage_site"
+                      label="Patrimoine de l'humanité ?"
+                    />
+                    <Facet
+                      field="visitors"
+                      label="Nb visiteurs"
+                      filterType="any"
+                    />
+                    <Facet
+                      field="acres"
+                      label="Hectars"
+                      view={SingleSelectFacet}
+                    />
+                  </div>
+                }
+                bodyContent={
+                  <Results
+                    titleField="title"
+                    urlField="nps_link"
+                    shouldTrackClickThrough={true}
+                  />
+                }
+                bodyHeader={
+                  <React.Fragment>
+                    {wasSearched && <PagingInfo />}
+                    {wasSearched && <ResultsPerPage />}
+                  </React.Fragment>
+                }
+                bodyFooter={<Paging />}
+              />
+            </ErrorBoundary>
+          </div>
+        )}
+      </WithSearch>
     </SearchProvider>
   );
 };

@@ -23,17 +23,17 @@ const client = new Client({
 
 // accepte requete http GET pour query une recherche
 // sur l'index national-parks
-app.get('/api/national-parks', async (req, res) => {
+app.post('/api/national-parks', async (req, res) => {
   // le body de la requete doit etre un JSON, il faut donc bien
   // penser à mettre -H "Content-Type: application/json" dans la
   // requete cURL
   const queryResults = await client.search({
     index: 'national-parks',
-    body: req.body,
+    body: req.body.data,
   });
 
   // on renvoie seulement les résultats de la recherche, pas de méta données
-  res.send(queryResults.body.hits.hits);
+  res.send(queryResults.body);
 });
 
 // requete pour avoir des infos sur les indexes d'elasticsearch
