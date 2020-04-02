@@ -23,7 +23,7 @@ const client = new Client({
 
 // accepte requete http GET pour query une recherche
 // sur l'index national-parks
-app.get('/national-parks', async (req, res) => {
+app.get('/api/national-parks', async (req, res) => {
   // le body de la requete doit etre un JSON, il faut donc bien
   // penser à mettre -H "Content-Type: application/json" dans la
   // requete cURL
@@ -36,16 +36,15 @@ app.get('/national-parks', async (req, res) => {
   res.send(queryResults.body.hits.hits);
 });
 
-
 // requete pour avoir des infos sur les indexes d'elasticsearch
-app.get('/indices', async (req, res) => {
+app.get('/api/indices', async (req, res) => {
   const queryResults = await client.cat.indices({
-    format: "json",
+    format: 'json',
     bytes: 'kb',
     v: true,
   });
   res.send(queryResults.body);
 });
 
-// écoute serveur sur le port local 3961
-app.listen(3961, () => console.log('App running at http://localhost:3961'));
+// écoute serveur sur le port local 3001
+app.listen(3001, () => console.log('App running at http://localhost:3001'));
