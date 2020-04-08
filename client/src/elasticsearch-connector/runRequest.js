@@ -1,7 +1,6 @@
 import axios from 'axios';
 
 export default async body => {
-  console.log(body);
   try {
     const host =
       process.env.NODE_ENV === 'production'
